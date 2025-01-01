@@ -2,7 +2,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/Gabriela-Milusheva/BookaStay">
-    <img style="https://github.com/Gabriela-Milusheva/BookaStay/blob/main/images/bookastay_logo.png" src="" alt="Logo" width="70%" height="70%">
+    <img style="images/bookastay_logo.png" src="" alt="Logo" width="70%" height="70%">
   </a>
 
 
