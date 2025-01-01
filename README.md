@@ -1,9 +1,11 @@
 <!-- PROJECT LOGO -->
 <br />
+
 <p align="center">
   <a href="https://github.com/Gabriela-Milusheva/BookaStay/blob/main/">
-    <img style="images/bookastay_logo.png" src="" alt="Logo" width="70%" height="70%">
+    <img src="images/bookastay_logo.png" alt="Logo" width="70%" height="70%">
   </a>
+</p>
 
 
   <h3 align="center">BookaStay: Room Booking System</h3>
@@ -19,6 +21,7 @@ To get a local copy up and running follow these simple steps.
 
 ### Prerequisites
 To run this project you first need to install and set up:
+<br>
 ....
 
 <br>
