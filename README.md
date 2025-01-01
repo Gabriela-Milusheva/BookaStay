@@ -3,7 +3,7 @@
 
 <p align="center">
   <a href="https://github.com/Gabriela-Milusheva/BookaStay/blob/main/">
-    <img src="images/bookastay_logo.png" alt="Logo" width="70%" height="70%">
+    <img src="images/bookastay_logo.png" alt="Logo" width="30%" height="30%">
   </a>
 </p>
 
