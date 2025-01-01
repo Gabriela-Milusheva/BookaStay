@@ -7,7 +7,6 @@
   </a>
 </p>
 
-
   <h3 align="center">BookaStay: Room Booking System</h3>
 
 <p align="center">
