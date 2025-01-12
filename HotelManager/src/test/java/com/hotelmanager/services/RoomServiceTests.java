@@ -61,8 +61,6 @@ public class RoomServiceTests {
         UUID hotelId = UUID.randomUUID();
         Hotel mockHotel = new Hotel();
         mockHotel.setId(hotelId);
-
-        // Create room DTO with correct constructor
         CreateRoomDto createRoomDto = new CreateRoomDto(
             101, 2, 150.0, RoomTypes.DOUBLE.name(), "Ocean View Room", 3, "Ocean", 25.5, 
             "Free Wi-Fi, Mini Bar", 4, hotelId
@@ -129,10 +127,9 @@ void deleteRoomByRoomId_ShouldThrowException_WhenRoomDoesNotExist() {
     });
     
     assertEquals(String.format("Room with ID %s not found.", roomId), exception.getMessage());
-    
-    // Verify that only the findById method was called
+
     verify(roomRepository).findById(roomId);
-    verifyNoMoreInteractions(roomRepository);  // Ensure no further interactions occurred
+    verifyNoMoreInteractions(roomRepository);
 }
 
     @Test
@@ -234,8 +231,7 @@ void deleteRoomByRoomId_ShouldThrowException_WhenRoomDoesNotExist() {
     
         assertEquals(String.format("Room with ID %s not found.", roomId), exception.getMessage());
     
-        // Verify that only the findById method was called
         verify(roomRepository).findById(roomId);
-        verifyNoMoreInteractions(roomRepository);  // Ensure no further interactions occurred
+        verifyNoMoreInteractions(roomRepository);  
     }
 }
