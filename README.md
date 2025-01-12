@@ -68,17 +68,25 @@ To get a local copy up and running, follow these steps:
    ```sh
    cd BookaStay/bookastay
    ```
+   Compile the project and download all dependencies:
+    ```sh
+    mvn clean install
+    ```
+   Ensure the project is functioning as expected by running the test suite:
+   ```sh
+    mvn spring-boot:run
+    ```
    Start the server:
    ```sh
-   command
+   mvn spring-boot:run
    ```
    
-4. **Restart the server if needed**:
+5. **Restart the server if needed**:
    <br />
    <br />
    If the server stops or you need to restart it, you can stop the running process and restart it:
    ```sh
-   command
+   mvn spring-boot:run
    ```
    ---
    
