@@ -74,7 +74,7 @@ To get a local copy up and running, follow these steps:
     ```
    Ensure the project is functioning as expected by running the test suite:
    ```sh
-    mvn spring-boot:run
+    mvn test
     ```
    Start the server:
    ```sh
