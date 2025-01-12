@@ -54,7 +54,7 @@ public class HotelController {
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             response = new ResponseDto<>(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred. Please try again later.");
-            return ResponseEntity.internalServerError().body(response); 
+            return ResponseEntity.internalServerError().body(response);
         }
     }
 
@@ -158,7 +158,7 @@ public class HotelController {
 
     @PostMapping("/{hotelId}/reviews")
     public ResponseEntity<ResponseDto<ReviewDto>> addReview(
-            @PathVariable UUID hotelId, 
+            @PathVariable UUID hotelId,
             @RequestBody @Valid RequestDto<ReviewDto> request,
             BindingResult bindingResult) throws JsonProcessingException {
         if (bindingResult.hasErrors()) {
@@ -210,7 +210,7 @@ public class HotelController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Integer minRating,
             @RequestParam(required = false) String address) {
-    
+
         try {
             List<HotelDTO> filteredHotels = hotelService.filterHotels(name, minRating, address);
             ResponseDto<List<HotelDTO>> response = new ResponseDto<>(filteredHotels, HttpStatus.OK, "Filtered hotels fetched successfully");

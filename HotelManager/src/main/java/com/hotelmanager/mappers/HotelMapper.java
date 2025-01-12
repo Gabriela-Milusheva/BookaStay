@@ -6,9 +6,10 @@ import com.hotelmanager.models.Hotel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
+
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface HotelMapper {
-    
+
     // Map CreateHotelDTO to Hotel entity
     @Mapping(target = "name", source = "dto.name")
     @Mapping(target = "starRating", source = "dto.starRating")
