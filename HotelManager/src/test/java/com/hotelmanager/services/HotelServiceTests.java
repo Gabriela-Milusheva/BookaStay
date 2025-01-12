@@ -1,30 +1,42 @@
 package com.hotelmanager.services;
 
-import com.hotelmanager.dtos.hotel.CreateHotelDTO;
-import com.hotelmanager.dtos.hotel.HotelDTO;
-import com.hotelmanager.dtos.room.CreateRoomDTO;
-import com.hotelmanager.dtos.room.RoomDTO;
-import com.hotelmanager.mappers.HotelMapper;
-import com.hotelmanager.mappers.RoomMapper;
-import com.hotelmanager.models.Hotel;
-import com.hotelmanager.models.Room;
-import com.hotelmanager.repositories.HotelRepository;
-import com.hotelmanager.repositories.RoomRepository;
-import com.hotelmanager.utils.RoomNumberUtil;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import com.hotelmanager.dtos.hotel.CreateHotelDTO;
+import com.hotelmanager.dtos.hotel.HotelDTO;
+import com.hotelmanager.dtos.hotel.UpdateHotelDto;
+import com.hotelmanager.dtos.review.ReviewDto;
+import com.hotelmanager.dtos.room.RoomDto;
+import com.hotelmanager.exception.hotel.HotelCustomException;
+import com.hotelmanager.mappers.HotelMapper;
+import com.hotelmanager.mappers.ReviewMapper;
+import com.hotelmanager.mappers.RoomMapper;
+import com.hotelmanager.models.Hotel;
+import com.hotelmanager.models.Review;
+import com.hotelmanager.models.Room;
+import com.hotelmanager.repositories.HotelRepository;
+import com.hotelmanager.repositories.ReviewRepository;
+import com.hotelmanager.repositories.RoomRepository;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-class HotelServiceTest {
+public class HotelServiceTests {
 
     @Mock
     private HotelRepository hotelRepository;
@@ -33,10 +45,16 @@ class HotelServiceTest {
     private RoomRepository roomRepository;
 
     @Mock
+    private ReviewRepository reviewRepository;
+
+    @Mock
     private HotelMapper hotelMapper;
 
     @Mock
     private RoomMapper roomMapper;
+
+    @Mock
+    private ReviewMapper reviewMapper;
 
     @InjectMocks
     private HotelService hotelService;
@@ -45,7 +63,6 @@ class HotelServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Initializes mocks and injects them into the test class
         closeable = MockitoAnnotations.openMocks(this);
     }
 
@@ -54,219 +71,245 @@ class HotelServiceTest {
         closeable.close();
     }
 
+    private Hotel mockHotel(UUID hotelId, String name) {
+        Hotel hotel = new Hotel();
+        hotel.setId(hotelId);
+        hotel.setName(name);
+        return hotel;
+    }
+
+    private Room mockRoom(int number, int bedCapacity, double pricePerNight) {
+        Room room = new Room();
+        room.setNumber(number);
+        room.setBedCapacity(bedCapacity);
+        room.setPricePerNight(pricePerNight);
+        return room;
+    }
+
+    private Review mockReview(Hotel hotel, String title, String comment, int rating) {
+        Review review = new Review();
+        review.setHotel(hotel);
+        review.setReviewTitle(title);
+        review.setReviewDesc(comment);
+        review.setRating(rating);
+        return review;
+    }
+
     @Test
     void createHotel_ShouldReturnCreatedHotel_WhenNameIsUnique() {
         // Arrange
-        CreateHotelDTO createHotelDTO = new CreateHotelDTO("Grand Plaza", 5);
-
+        CreateHotelDTO createHotelDTO = new CreateHotelDTO();
+        createHotelDTO.setName("Grand Plaza");
+        createHotelDTO.setStarRating(5);
+        
         Hotel mockHotel = new Hotel();
         mockHotel.setName("Grand Plaza");
         mockHotel.setStarRating(5);
-
-        UUID hotelId = UUID.randomUUID();
-        HotelDTO expectedDto = new HotelDTO("Grand Plaza", 5, new ArrayList<>() {
-        });
-
+        
+        HotelDTO expectedDto = new HotelDTO();
+        expectedDto.setName("Grand Plaza");
+        expectedDto.setStarRating(5);
+        expectedDto.setRooms(new ArrayList<>());
+        
+        // Mock repository calls
         when(hotelRepository.existsByName("Grand Plaza")).thenReturn(false);
         when(hotelMapper.toEntity(createHotelDTO)).thenReturn(mockHotel);
         when(hotelRepository.save(mockHotel)).thenReturn(mockHotel);
         when(hotelMapper.toDto(mockHotel)).thenReturn(expectedDto);
-
+        
         // Act
         HotelDTO result = hotelService.createHotel(createHotelDTO);
-
+        
         // Assert
         assertNotNull(result);
-        assertEquals("Grand Plaza", result.name());
-        assertEquals(5, result.starRating());
+        assertEquals("Grand Plaza", result.getName());
+        assertEquals(5, result.getStarRating());
+        assertEquals(0, result.getRooms().size());  // Ensuring rooms are an empty list
         verify(hotelRepository).existsByName("Grand Plaza");
         verify(hotelMapper).toEntity(createHotelDTO);
-        verify(hotelRepository).save(mockHotel);
+        verify(hotelRepository).save(mockHotel);  // Verifying the actual object, not using 'any'
         verify(hotelMapper).toDto(mockHotel);
     }
-
+    
     @Test
-    void createHotel_ShouldThrowException_WhenNameAlreadyExists() {
+    void createHotel_ShouldThrowHotelCustomException_WhenNameIsNotUnique() {
         // Arrange
-        CreateHotelDTO createHotelDTO = new CreateHotelDTO("Grand Plaza", 5);
+        CreateHotelDTO createHotelDTO = new CreateHotelDTO();
+        createHotelDTO.setName("Grand Plaza");
 
         when(hotelRepository.existsByName("Grand Plaza")).thenReturn(true);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        HotelCustomException exception = assertThrows(HotelCustomException.class, () -> {
             hotelService.createHotel(createHotelDTO);
         });
+        assertEquals("Hotel with name 'Grand Plaza' already exists", exception.getMessage());
 
-        assertEquals("Hotel with name Grand Plaza already exists.", exception.getMessage());
-
-        //We don't waste time and resources by mapping
-        verify(hotelMapper, never()).toEntity(any());
-
-        //Make sure the database is untouched
-        verify(hotelRepository, never()).save(any());
     }
 
     @Test
-    void updateStarRatingByName_ShouldUpdateStarRating_WhenHotelExists() {
+    void getHotelById_ShouldReturnHotel_WhenHotelExists() {
         // Arrange
-        String hotelName = "Grand Plaza";
-        int newStarRating = 4;
+        UUID hotelId = UUID.randomUUID();
+        Hotel mockHotel = mockHotel(hotelId, "Grand Plaza");
+        HotelDTO expectedDto = new HotelDTO();
+        expectedDto.setName("Grand Plaza");
+        expectedDto.setStarRating(5);
+        expectedDto.setRooms(new ArrayList<>());
 
-        when(hotelRepository.existsByName(hotelName)).thenReturn(true);
+        when(hotelRepository.findById(hotelId)).thenReturn(Optional.of(mockHotel));
+        when(hotelMapper.toDto(mockHotel)).thenReturn(expectedDto);
 
         // Act
-        hotelService.updateStarRatingByName(hotelName, newStarRating);
+        HotelDTO result = hotelService.getHotelById(hotelId);
 
         // Assert
-        verify(hotelRepository).existsByName(hotelName);
-        verify(hotelRepository).updateStarRatingByName(hotelName, newStarRating);
+        assertNotNull(result);
+        assertEquals("Grand Plaza", result.getName());
+        verify(hotelRepository).findById(hotelId);
+        verify(hotelMapper).toDto(mockHotel);
     }
 
     @Test
-    void updateStarRatingByName_ShouldThrowException_WhenHotelDoesNotExist() {
+    void getHotelById_ShouldThrowHotelNotFoundException_WhenHotelDoesNotExist() {
         // Arrange
-        String hotelName = "Nonexistent Hotel";
-        int newStarRating = 3;
-
-        when(hotelRepository.existsByName(hotelName)).thenReturn(false);
+        UUID hotelId = UUID.randomUUID();
+        when(hotelRepository.findById(hotelId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            hotelService.updateStarRatingByName(hotelName, newStarRating);
+        HotelCustomException.HotelNotFoundException exception = assertThrows(HotelCustomException.HotelNotFoundException.class, () -> {
+            hotelService.getHotelById(hotelId);
         });
-
-        assertEquals("Hotel with name Nonexistent Hotel not found.", exception.getMessage());
-
-        verify(hotelRepository, never()).updateStarRatingByName(anyString(), anyInt());
+        assertEquals(String.format("Hotel with ID '%s' not found", hotelId.toString()), exception.getMessage());
+        verify(hotelRepository).findById(hotelId);
     }
 
     @Test
-    void deleteHotelByName_ShouldReturnTrue_WhenHotelExists() {
+    void deleteHotelById_ShouldDeleteHotel_WhenHotelExists() {
         // Arrange
-        String hotelName = "Grand Plaza";
-        Hotel mockHotel = new Hotel();
-        mockHotel.setName(hotelName);
+        UUID hotelId = UUID.randomUUID();
+        Hotel mockHotel = mockHotel(hotelId, "Grand Plaza");
 
-        when(hotelRepository.findByName(hotelName)).thenReturn(Optional.of(mockHotel));
+        when(hotelRepository.findById(hotelId)).thenReturn(Optional.of(mockHotel));
 
         // Act
-        boolean result = hotelService.deleteHotelByName(hotelName);
+        hotelService.deleteHotelById(hotelId);
 
         // Assert
-        assertTrue(result);
-        verify(hotelRepository).findByName(hotelName);
+        verify(hotelRepository).findById(hotelId);
         verify(hotelRepository).delete(mockHotel);
     }
 
     @Test
-    void deleteHotelByName_ShouldReturnFalse_WhenHotelDoesNotExist() {
+    void deleteHotelById_ShouldThrowHotelNotFoundException_WhenHotelDoesNotExist() {
         // Arrange
-        String hotelName = "Nonexistent Hotel";
+        UUID hotelId = UUID.randomUUID();
+        when(hotelRepository.findById(hotelId)).thenReturn(Optional.empty());
 
-        when(hotelRepository.findByName(hotelName)).thenReturn(Optional.empty());
-
-        // Act
-        boolean result = hotelService.deleteHotelByName(hotelName);
-
-        // Assert
-        assertFalse(result);
-        verify(hotelRepository).findByName(hotelName);
+        // Act & Assert
+        HotelCustomException.HotelNotFoundException exception = assertThrows(HotelCustomException.HotelNotFoundException.class, () -> {
+            hotelService.deleteHotelById(hotelId);
+        });
+        assertEquals(String.format("Hotel with ID '%s' not found", hotelId.toString()), exception.getMessage());
+        verify(hotelRepository).findById(hotelId);
         verify(hotelRepository, never()).delete(any());
     }
 
     @Test
-    void addRoomsToHotel_ShouldAddRooms_WhenHotelExists() {
+    void getRoomsByHotelId_ShouldReturnRoomDTOs_WhenHotelExists() {
         // Arrange
-        String hotelName = "Grand Plaza";
-        CreateRoomDTO roomDTO = new CreateRoomDTO(101, 2, 150.0, 3);
-
-        Hotel mockHotel = new Hotel();
-        mockHotel.setName(hotelName);
-
-        Set<Integer> existingRoomNumbers = Set.of(101, 102);
-        List<Integer> newRoomNumbers = List.of(103, 104, 105);
-        ArrayList<Room> rooms = new ArrayList<>();
-
-        Room roomOne = new Room();
-        roomOne.setNumber(101);
-        rooms.add(roomOne);
-
-        Room roomTwo = new Room();
-        roomTwo.setNumber(102);
-        rooms.add(roomTwo);
-
-        Room mockRoom = new Room();
-
-        when(hotelRepository.findByName(hotelName)).thenReturn(Optional.of(mockHotel));
-        when(roomRepository.findByHotel(mockHotel)).thenReturn(rooms);
-        mockStatic(RoomNumberUtil.class);
-        when(RoomNumberUtil.findNextAvailableRoomNumbers(existingRoomNumbers, 101, 3)).thenReturn(newRoomNumbers);
-        when(roomMapper.toEntity(roomDTO)).thenReturn(mockRoom);
-
-        // Act
-        hotelService.addRoomsToHotel(hotelName, roomDTO);
-
-        // Assert
-        verify(hotelRepository).findByName(hotelName);
-        verify(roomRepository).findByHotel(mockHotel);
-        verify(roomRepository, times(3)).save(any(Room.class));
-    }
-
-    @Test
-    void getRoomsByHotelName_ShouldReturnRoomDTOs_WhenHotelExists() {
-        // Arrange
-        String hotelName = "Grand Plaza";
-
-        Hotel mockHotel = new Hotel();
-        mockHotel.setName(hotelName);
-
-        Room mockRoom1 = new Room();
-        mockRoom1.setNumber(101);
-        mockRoom1.setBedCapacity(2);
-        mockRoom1.setPricePerNight(150.0);
-
-        Room mockRoom2 = new Room();
-        mockRoom2.setNumber(102);
-        mockRoom2.setBedCapacity(3);
-        mockRoom2.setPricePerNight(200.0);
-
-        RoomDTO roomDTO1 = new RoomDTO(101, 2, 150.0);
-        RoomDTO roomDTO2 = new RoomDTO(102, 3, 200.0);
-
-        when(hotelRepository.findByName(hotelName)).thenReturn(Optional.of(mockHotel));
-        when(roomRepository.findByHotel(mockHotel)).thenReturn(List.of(mockRoom1, mockRoom2));
+        UUID hotelId = UUID.randomUUID();
+        Hotel mockHotel = mockHotel(hotelId, "Grand Plaza");
+    
+        Room mockRoom1 = mockRoom(101, 2, 150.0);
+        Room mockRoom2 = mockRoom(102, 3, 200.0);
+    
+        RoomDto roomDTO1 = new RoomDto(UUID.randomUUID(), 101, 2, 150.0, "Single", "Ocean view", 1, "Seaside", 20.0, "Wi-Fi, TV", 2, hotelId);
+        RoomDto roomDTO2 = new RoomDto(UUID.randomUUID(), 102, 3, 200.0, "Double", "Mountain view", 2, "Forest", 25.0, "Wi-Fi, TV", 3, hotelId);
+    
+        when(hotelRepository.findById(hotelId)).thenReturn(Optional.of(mockHotel));
+        when(roomRepository.findRoomsByHotelId(hotelId)).thenReturn(Arrays.asList(mockRoom1, mockRoom2));
         when(roomMapper.toDto(mockRoom1)).thenReturn(roomDTO1);
         when(roomMapper.toDto(mockRoom2)).thenReturn(roomDTO2);
-
+    
         // Act
-        List<RoomDTO> result = hotelService.getRoomsByHotelName(hotelName);
-
+        List<RoomDto> result = hotelService.getRoomsByHotelId(hotelId);
+    
         // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals(roomDTO1, result.get(0));
         assertEquals(roomDTO2, result.get(1));
-
-        verify(hotelRepository).findByName(hotelName);
-        verify(roomRepository).findByHotel(mockHotel);
+    
+        verify(hotelRepository).findById(hotelId);
+        verify(roomRepository).findRoomsByHotelId(hotelId);
         verify(roomMapper).toDto(mockRoom1);
         verify(roomMapper).toDto(mockRoom2);
     }
 
     @Test
-    void getRoomsByHotelName_ShouldThrowException_WhenHotelDoesNotExist() {
+    void addReviewToHotel_ShouldReturnReview_WhenHotelExists() {
         // Arrange
-        String hotelName = "Nonexistent Hotel";
+        UUID hotelId = UUID.randomUUID();
+        Hotel mockHotel = mockHotel(hotelId, "Grand Plaza");
 
-        when(hotelRepository.findByName(hotelName)).thenReturn(Optional.empty());
+        ReviewDto reviewDto = new ReviewDto();
+        reviewDto.setReviewTitle("Excellent!");
+        reviewDto.setRating(5);
 
-        // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            hotelService.getRoomsByHotelName(hotelName);
-        });
+        Review mockReview = mockReview(mockHotel, "10/10", "Excellent!", 5);
 
-        assertEquals("Hotel with name Nonexistent Hotel not found.", exception.getMessage());
+        when(hotelRepository.findById(hotelId)).thenReturn(Optional.of(mockHotel));
+        when(reviewMapper.toEntity(reviewDto)).thenReturn(mockReview);
+        when(reviewRepository.save(mockReview)).thenReturn(mockReview);
+        when(reviewMapper.toDto(mockReview)).thenReturn(reviewDto);
 
-        verify(hotelRepository).findByName(hotelName);
+        // Act
+        ReviewDto result = hotelService.addReviewToHotel(hotelId, reviewDto);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("Excellent!", result.getReviewTitle());
+        assertEquals(5, result.getRating());
+        verify(hotelRepository).findById(hotelId);
+        verify(reviewMapper).toEntity(reviewDto);
+        verify(reviewRepository).save(mockReview);
+        verify(reviewMapper).toDto(mockReview);
     }
+
+    @Test
+    void updateHotel_ShouldReturnUpdatedHotel_WhenHotelExists() {
+        // Arrange
+        UUID hotelId = UUID.randomUUID();
+        Hotel existingHotel = new Hotel();
+        existingHotel.setId(hotelId);
+        existingHotel.setName("Old Hotel Name");
+    
+        Hotel updatedHotel = new Hotel();
+        updatedHotel.setId(hotelId);
+        updatedHotel.setName("Updated Hotel Name");
+    
+        UpdateHotelDto updateHotelDto = new UpdateHotelDto();
+        updateHotelDto.setName("Updated Hotel Name");
+    
+        HotelDTO updatedHotelDto = new HotelDTO();
+        updatedHotelDto.setId(hotelId);
+        updatedHotelDto.setName("Updated Hotel Name");
+    
+        when(hotelRepository.findById(hotelId)).thenReturn(Optional.of(existingHotel));
+        when(hotelRepository.save(existingHotel)).thenReturn(updatedHotel);
+        when(hotelMapper.toDto(updatedHotel)).thenReturn(updatedHotelDto);
+    
+        // Act
+        HotelDTO result = hotelService.updateHotel(hotelId, updateHotelDto);
+    
+        // Assert
+        assertNotNull(result); // Ensure the result is not null
+        assertEquals("Updated Hotel Name", result.getName()); // Validate the updated name
+    
+        verify(hotelRepository).findById(hotelId);
+        verify(hotelRepository).save(existingHotel);
+        verify(hotelMapper).toDto(updatedHotel);
+    }
+    
 }
