@@ -10,6 +10,7 @@ import org.mapstruct.MappingConstants;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface RoomMapper {
+
     // Map Room entity back to RoomDTO
     @Mapping(target = "number", source = "room.number")
     @Mapping(target = "bedCapacity", source = "room.bedCapacity")
@@ -25,16 +26,16 @@ public interface RoomMapper {
     RoomDto toDto(Room room);
 
     // Map RoomDTO to Room entity
-    @Mapping(target="number", source="dto.number")
-    @Mapping(target="bedCapacity", source="dto.bedCapacity")
-    @Mapping(target="pricePerNight", source="dto.pricePerNight")
-    @Mapping(target="roomType", source="dto.roomType")
-    @Mapping(target="description", source="dto.description")
-    @Mapping(target="floor", source="dto.floor")
-    @Mapping(target="view", source="dto.view")
-    @Mapping(target="size", source="dto.size")
-    @Mapping(target="amenities", source="dto.amenities")
-    @Mapping(target="maxOccupants", source="dto.maxOccupants")
+    @Mapping(target = "number", source = "dto.number")
+    @Mapping(target = "bedCapacity", source = "dto.bedCapacity")
+    @Mapping(target = "pricePerNight", source = "dto.pricePerNight")
+    @Mapping(target = "roomType", source = "dto.roomType")
+    @Mapping(target = "description", source = "dto.description")
+    @Mapping(target = "floor", source = "dto.floor")
+    @Mapping(target = "view", source = "dto.view")
+    @Mapping(target = "size", source = "dto.size")
+    @Mapping(target = "amenities", source = "dto.amenities")
+    @Mapping(target = "maxOccupants", source = "dto.maxOccupants")
     @Mapping(target = "hotel.id", source = "dto.hotelId")
     Room toEntity(CreateRoomDto dto);
 }

@@ -34,7 +34,7 @@ public class RoomService {
     public RoomDto createRoom(UUID hotelId, CreateRoomDto createRoomDto) {
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new HotelNotFoundException(String.format(
-                        HotelMessages.HOTEL_NOT_FOUND.getMessage(),  hotelId)));
+                HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
 
         boolean roomExists = roomRepository.existsByHotelIdAndNumber(hotelId, createRoomDto.getNumber());
         if (roomExists) {
@@ -54,7 +54,7 @@ public class RoomService {
     public boolean deleteRoomByRoomId(UUID roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException(String.format(
-                        RoomMessages.ROOM_NOT_FOUND.getMessage(),  roomId)));
+                RoomMessages.ROOM_NOT_FOUND.getMessage(), roomId)));
 
         roomRepository.delete(room);
         return true;
@@ -64,14 +64,14 @@ public class RoomService {
         return roomRepository.findById(roomId)
                 .map(roomMapper::toDto)
                 .orElseThrow(() -> new RoomNotFoundException(String.format(
-                        RoomMessages.ROOM_NOT_FOUND.getMessage(), roomId)));
+                RoomMessages.ROOM_NOT_FOUND.getMessage(), roomId)));
     }
 
     @Transactional
     public RoomDto updateRoomByRoomId(UUID roomId, UpdateRoomDto updateRoomDto) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomNotFoundException(String.format(
-                        RoomMessages.ROOM_NOT_FOUND.getMessage(), roomId)));
+                RoomMessages.ROOM_NOT_FOUND.getMessage(), roomId)));
 
         room.setBedCapacity(updateRoomDto.getBedCapacity());
         room.setPricePerNight(updateRoomDto.getPricePerNight());

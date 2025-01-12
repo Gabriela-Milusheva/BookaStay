@@ -25,7 +25,7 @@ public class Hotel {
     private UUID id;
 
     private String name;
-    
+
     private int starRating;
 
     private String address;
@@ -34,7 +34,7 @@ public class Hotel {
     private String website;
 
     @Column(length = 1000)
-    private String description;  
+    private String description;
 
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Room> rooms;

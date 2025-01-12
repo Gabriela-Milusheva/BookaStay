@@ -47,7 +47,7 @@ public class HotelService {
     public HotelDTO getHotelById(UUID hotelId) {
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new HotelNotFoundException(String.format(
-                    HotelMessages.HOTEL_NOT_FOUND.getMessage(),  hotelId)));
+                HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
         return hotelMapper.toDto(hotel);
     }
 
@@ -67,33 +67,33 @@ public class HotelService {
     }
 
     @Transactional(readOnly = true)
-public List<HotelDTO> filterHotels(String name, Integer minRating, String address) {
-    List<Hotel> hotels = hotelRepository.filterHotels(name, minRating, address);
-    return hotels.stream().map(hotelMapper::toDto).collect(Collectors.toList());
-}
+    public List<HotelDTO> filterHotels(String name, Integer minRating, String address) {
+        List<Hotel> hotels = hotelRepository.filterHotels(name, minRating, address);
+        return hotels.stream().map(hotelMapper::toDto).collect(Collectors.toList());
+    }
 
     @Transactional
     public void deleteHotelById(UUID hotelId) {
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new HotelNotFoundException(String.format(
-                    HotelMessages.HOTEL_NOT_FOUND.getMessage(),  hotelId)));
+                HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
         hotelRepository.delete(hotel);
     }
 
     public List<RoomDto> getRoomsByHotelId(UUID hotelId) {
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new HotelNotFoundException(String.format(
-                    HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
-    
+                HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
+
         return roomRepository.findRoomsByHotelId(hotel.getId()).stream()
                 .map(roomMapper::toDto)
                 .collect(Collectors.toList());
     }
-    
+
     public List<ReviewDto> getReviewsByHotelId(UUID hotelId) {
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new HotelNotFoundException(String.format(
-                        HotelMessages.HOTEL_NOT_FOUND.getMessage(),  hotelId)));
+                HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
         return reviewRepository.findReviewsByHotelId(hotel.getId()).stream()
                 .map(reviewMapper::toDto)
                 .collect(Collectors.toList());
@@ -103,7 +103,7 @@ public List<HotelDTO> filterHotels(String name, Integer minRating, String addres
     public ReviewDto addReviewToHotel(UUID hotelId, ReviewDto reviewDto) {
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new HotelNotFoundException(String.format(
-                    HotelMessages.HOTEL_NOT_FOUND.getMessage(),  hotelId)));
+                HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
         try {
             Review review = reviewMapper.toEntity(reviewDto);
             reviewRepository.save(review);
@@ -117,14 +117,26 @@ public List<HotelDTO> filterHotels(String name, Integer minRating, String addres
     public HotelDTO updateHotel(UUID hotelId, UpdateHotelDto updateHotelDto) {
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new HotelNotFoundException(String.format(
-                    HotelMessages.HOTEL_NOT_FOUND.getMessage(),  hotelId)));
+                HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
 
-        if (updateHotelDto.getName() != null) hotel.setName(updateHotelDto.getName());
-        if (updateHotelDto.getAddress() != null) hotel.setAddress(updateHotelDto.getAddress());
-        if (updateHotelDto.getPhoneNumber() != null) hotel.setPhoneNumber(updateHotelDto.getPhoneNumber());
-        if (updateHotelDto.getEmail() != null) hotel.setEmail(updateHotelDto.getEmail());
-        if (updateHotelDto.getWebsite() != null) hotel.setWebsite(updateHotelDto.getWebsite());
-        if (updateHotelDto.getDescription() != null) hotel.setDescription(updateHotelDto.getDescription());
+        if (updateHotelDto.getName() != null) {
+            hotel.setName(updateHotelDto.getName());
+        }
+        if (updateHotelDto.getAddress() != null) {
+            hotel.setAddress(updateHotelDto.getAddress());
+        }
+        if (updateHotelDto.getPhoneNumber() != null) {
+            hotel.setPhoneNumber(updateHotelDto.getPhoneNumber());
+        }
+        if (updateHotelDto.getEmail() != null) {
+            hotel.setEmail(updateHotelDto.getEmail());
+        }
+        if (updateHotelDto.getWebsite() != null) {
+            hotel.setWebsite(updateHotelDto.getWebsite());
+        }
+        if (updateHotelDto.getDescription() != null) {
+            hotel.setDescription(updateHotelDto.getDescription());
+        }
 
         try {
             Hotel updatedHotel = hotelRepository.save(hotel);
