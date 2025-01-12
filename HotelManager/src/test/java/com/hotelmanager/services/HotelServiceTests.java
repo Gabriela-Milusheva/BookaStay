@@ -124,10 +124,10 @@ public class HotelServiceTests {
         assertNotNull(result);
         assertEquals("Grand Plaza", result.getName());
         assertEquals(5, result.getStarRating());
-        assertEquals(0, result.getRooms().size());  // Ensuring rooms are an empty list
+        assertEquals(0, result.getRooms().size()); 
         verify(hotelRepository).existsByName("Grand Plaza");
         verify(hotelMapper).toEntity(createHotelDTO);
-        verify(hotelRepository).save(mockHotel);  // Verifying the actual object, not using 'any'
+        verify(hotelRepository).save(mockHotel); 
         verify(hotelMapper).toDto(mockHotel);
     }
     
@@ -304,8 +304,8 @@ public class HotelServiceTests {
         HotelDTO result = hotelService.updateHotel(hotelId, updateHotelDto);
     
         // Assert
-        assertNotNull(result); // Ensure the result is not null
-        assertEquals("Updated Hotel Name", result.getName()); // Validate the updated name
+        assertNotNull(result); 
+        assertEquals("Updated Hotel Name", result.getName());
     
         verify(hotelRepository).findById(hotelId);
         verify(hotelRepository).save(existingHotel);
