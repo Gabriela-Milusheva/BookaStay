@@ -1,6 +1,6 @@
 <!-- PROJECT LOGO -->
 <br />
-
+ 
 <p align="center">
   <a href="https://github.com/Gabriela-Milusheva/BookaStay/blob/main/">
     <img src="images/bookastay_logo.png" alt="BookaStay Logo" width="30%" height="30%">
@@ -18,7 +18,10 @@
 
 <h2 align="center">🌱 About The Project</h2>
 
-*TO DO*
+- 👨🏻‍💼 Габриела Милушева, Фак.№ 471222058 (Users) <br />
+- 🏨 Данаил Димитров, Фак.№ 471224118 (Hotels and Rooms) <br />
+- 🗓️ Ина Михайлова, Фак.№ 471222010 (Reservations)
+
 
 <!-- GETTING STARTED -->
 ---
