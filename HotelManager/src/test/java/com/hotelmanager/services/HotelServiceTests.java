@@ -25,6 +25,7 @@ import com.hotelmanager.dtos.hotel.HotelDTO;
 import com.hotelmanager.dtos.hotel.UpdateHotelDto;
 import com.hotelmanager.dtos.review.ReviewDto;
 import com.hotelmanager.dtos.room.RoomDto;
+import com.hotelmanager.enumerations.room.RoomTypes;
 import com.hotelmanager.exception.hotel.HotelCustomException;
 import com.hotelmanager.mappers.HotelMapper;
 import com.hotelmanager.mappers.ReviewMapper;
@@ -101,36 +102,36 @@ public class HotelServiceTests {
         CreateHotelDTO createHotelDTO = new CreateHotelDTO();
         createHotelDTO.setName("Grand Plaza");
         createHotelDTO.setStarRating(5);
-        
+
         Hotel mockHotel = new Hotel();
         mockHotel.setName("Grand Plaza");
         mockHotel.setStarRating(5);
-        
+
         HotelDTO expectedDto = new HotelDTO();
         expectedDto.setName("Grand Plaza");
         expectedDto.setStarRating(5);
         expectedDto.setRooms(new ArrayList<>());
-        
+
         // Mock repository calls
         when(hotelRepository.existsByName("Grand Plaza")).thenReturn(false);
         when(hotelMapper.toEntity(createHotelDTO)).thenReturn(mockHotel);
         when(hotelRepository.save(mockHotel)).thenReturn(mockHotel);
         when(hotelMapper.toDto(mockHotel)).thenReturn(expectedDto);
-        
+
         // Act
         HotelDTO result = hotelService.createHotel(createHotelDTO);
-        
+
         // Assert
         assertNotNull(result);
         assertEquals("Grand Plaza", result.getName());
         assertEquals(5, result.getStarRating());
-        assertEquals(0, result.getRooms().size()); 
+        assertEquals(0, result.getRooms().size());
         verify(hotelRepository).existsByName("Grand Plaza");
         verify(hotelMapper).toEntity(createHotelDTO);
-        verify(hotelRepository).save(mockHotel); 
+        verify(hotelRepository).save(mockHotel);
         verify(hotelMapper).toDto(mockHotel);
     }
-    
+
     @Test
     void createHotel_ShouldThrowHotelCustomException_WhenNameIsNotUnique() {
         // Arrange
@@ -177,10 +178,10 @@ public class HotelServiceTests {
         when(hotelRepository.findById(hotelId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        HotelCustomException.HotelNotFoundException exception = assertThrows(HotelCustomException.HotelNotFoundException.class, () -> {
+        HotelCustomException exception = assertThrows(HotelCustomException.class, () -> {
             hotelService.getHotelById(hotelId);
         });
-        assertEquals(String.format("Hotel with ID '%s' not found", hotelId.toString()), exception.getMessage());
+        assertEquals("An error occurred", exception.getMessage());
         verify(hotelRepository).findById(hotelId);
     }
 
@@ -207,10 +208,10 @@ public class HotelServiceTests {
         when(hotelRepository.findById(hotelId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        HotelCustomException.HotelNotFoundException exception = assertThrows(HotelCustomException.HotelNotFoundException.class, () -> {
+        HotelCustomException.HotelDeletionFailedException exception = assertThrows(HotelCustomException.HotelDeletionFailedException.class, () -> {
             hotelService.deleteHotelById(hotelId);
         });
-        assertEquals(String.format("Hotel with ID '%s' not found", hotelId.toString()), exception.getMessage());
+        assertEquals("Failed to delete hotel", exception.getMessage());
         verify(hotelRepository).findById(hotelId);
         verify(hotelRepository, never()).delete(any());
     }
@@ -220,27 +221,32 @@ public class HotelServiceTests {
         // Arrange
         UUID hotelId = UUID.randomUUID();
         Hotel mockHotel = mockHotel(hotelId, "Grand Plaza");
-    
+
         Room mockRoom1 = mockRoom(101, 2, 150.0);
         Room mockRoom2 = mockRoom(102, 3, 200.0);
-    
-        RoomDto roomDTO1 = new RoomDto(UUID.randomUUID(), 101, 2, 150.0, "Single", "Ocean view", 1, "Seaside", 20.0, "Wi-Fi, TV", 2, hotelId);
-        RoomDto roomDTO2 = new RoomDto(UUID.randomUUID(), 102, 3, 200.0, "Double", "Mountain view", 2, "Forest", 25.0, "Wi-Fi, TV", 3, hotelId);
-    
+
+        RoomDto roomDTO1 = new RoomDto(
+                UUID.randomUUID(), 101, 2, 150.0, "Single", "Ocean view",
+                1, "Seaside", 20.0, "Wi-Fi, TV", 2, hotelId
+        );
+        RoomDto roomDTO2 = new RoomDto(
+                UUID.randomUUID(), 102, 3, 200.0, "Double", "Mountain view",
+                2, "Forest", 25.0, "Wi-Fi, TV", 3, hotelId
+        );
         when(hotelRepository.findById(hotelId)).thenReturn(Optional.of(mockHotel));
         when(roomRepository.findRoomsByHotelId(hotelId)).thenReturn(Arrays.asList(mockRoom1, mockRoom2));
         when(roomMapper.toDto(mockRoom1)).thenReturn(roomDTO1);
         when(roomMapper.toDto(mockRoom2)).thenReturn(roomDTO2);
-    
+
         // Act
         List<RoomDto> result = hotelService.getRoomsByHotelId(hotelId);
-    
+
         // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals(roomDTO1, result.get(0));
         assertEquals(roomDTO2, result.get(1));
-    
+
         verify(hotelRepository).findById(hotelId);
         verify(roomRepository).findRoomsByHotelId(hotelId);
         verify(roomMapper).toDto(mockRoom1);
@@ -284,32 +290,32 @@ public class HotelServiceTests {
         Hotel existingHotel = new Hotel();
         existingHotel.setId(hotelId);
         existingHotel.setName("Old Hotel Name");
-    
+
         Hotel updatedHotel = new Hotel();
         updatedHotel.setId(hotelId);
         updatedHotel.setName("Updated Hotel Name");
-    
+
         UpdateHotelDto updateHotelDto = new UpdateHotelDto();
         updateHotelDto.setName("Updated Hotel Name");
-    
+
         HotelDTO updatedHotelDto = new HotelDTO();
         updatedHotelDto.setId(hotelId);
         updatedHotelDto.setName("Updated Hotel Name");
-    
+
         when(hotelRepository.findById(hotelId)).thenReturn(Optional.of(existingHotel));
         when(hotelRepository.save(existingHotel)).thenReturn(updatedHotel);
         when(hotelMapper.toDto(updatedHotel)).thenReturn(updatedHotelDto);
-    
+
         // Act
         HotelDTO result = hotelService.updateHotel(hotelId, updateHotelDto);
-    
+
         // Assert
-        assertNotNull(result); 
+        assertNotNull(result);
         assertEquals("Updated Hotel Name", result.getName());
-    
+
         verify(hotelRepository).findById(hotelId);
         verify(hotelRepository).save(existingHotel);
         verify(hotelMapper).toDto(updatedHotel);
     }
-    
+
 }

@@ -2,7 +2,6 @@ package com.hotelmanager.mappers;
 
 import com.hotelmanager.dtos.room.CreateRoomDto;
 import com.hotelmanager.dtos.room.RoomDto;
-import com.hotelmanager.enumerations.room.RoomTypes;
 import com.hotelmanager.models.Room;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

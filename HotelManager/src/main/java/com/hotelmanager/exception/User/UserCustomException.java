@@ -119,4 +119,32 @@ public abstract class UserCustomException extends RuntimeException {
             super(UserMessages.REGISTER_FAILED.getMessage());
         }
     }
+
+    public static class InvalidEmail extends UserCustomException {
+
+        public InvalidEmail() {
+            super(UserMessages.INVALID_EMAIL.getMessage());
+        }
+    }
+
+    public static class InvalidUsernameException extends UserCustomException {
+
+        public InvalidUsernameException() {
+            super(UserMessages.INVALID_USERNAME.getMessage());
+        }
+    }
+
+    public static class InvalidUserDto extends UserCustomException {
+
+        public InvalidUserDto() {
+            super(UserMessages.INVALID_USER_DTO.getMessage());
+        }
+    }
+
+    public static class InvalidLoginUserDto extends UserCustomException {
+
+        public InvalidLoginUserDto() {
+            super(UserMessages.INVALID_LOGIN_USER_DTO.getMessage());
+        }
+    }
 }

@@ -32,51 +32,78 @@ public class RoomService {
 
     @Transactional
     public RoomDto createRoom(UUID hotelId, CreateRoomDto createRoomDto) {
-        Hotel hotel = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new HotelNotFoundException(String.format(
-                HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
+        try {
+            Hotel hotel = hotelRepository.findById(hotelId)
+                    .orElseThrow(() -> new HotelNotFoundException(String.format(
+                    HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
 
-        boolean roomExists = roomRepository.existsByHotelIdAndNumber(hotelId, createRoomDto.getNumber());
-        if (roomExists) {
-            throw new RoomAlreadyExistsException(String.format(
-                    RoomMessages.ROOM_ALREADY_EXISTS.getMessage(), createRoomDto.getNumber(), hotelId));
+            boolean roomExists = roomRepository.existsByHotelIdAndNumber(hotelId, createRoomDto.getNumber());
+            if (roomExists) {
+                throw new RoomAlreadyExistsException(String.format(
+                        RoomMessages.ROOM_ALREADY_EXISTS.getMessage(), createRoomDto.getNumber(), hotelId));
+            }
+
+            Room room = roomMapper.toEntity(createRoomDto);
+            room.setHotel(hotel);
+
+            Room savedRoom = roomRepository.save(room);
+            return roomMapper.toDto(savedRoom);
+
+        } catch (HotelNotFoundException | RoomAlreadyExistsException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
         }
-
-        Room room = roomMapper.toEntity(createRoomDto);
-        room.setHotel(hotel);
-
-        Room savedRoom = roomRepository.save(room);
-
-        return roomMapper.toDto(savedRoom);
     }
 
     @Transactional
     public boolean deleteRoomByRoomId(UUID roomId) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RoomNotFoundException(String.format(
-                RoomMessages.ROOM_NOT_FOUND.getMessage(), roomId)));
+        try {
+            Room room = roomRepository.findById(roomId)
+                    .orElseThrow(() -> new RoomNotFoundException(String.format(
+                    RoomMessages.ROOM_NOT_FOUND.getMessage(), roomId)));
 
-        roomRepository.delete(room);
-        return true;
+            roomRepository.delete(room);
+            return true;
+
+        } catch (RoomNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
     public RoomDto getRoomByRoomId(UUID roomId) {
-        return roomRepository.findById(roomId)
-                .map(roomMapper::toDto)
-                .orElseThrow(() -> new RoomNotFoundException(String.format(
-                RoomMessages.ROOM_NOT_FOUND.getMessage(), roomId)));
+        try {
+            return roomRepository.findById(roomId)
+                    .map(roomMapper::toDto)
+                    .orElseThrow(() -> new RoomNotFoundException(String.format(
+                    RoomMessages.ROOM_NOT_FOUND.getMessage(), roomId)));
+
+        } catch (RoomNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
     @Transactional
     public RoomDto updateRoomByRoomId(UUID roomId, UpdateRoomDto updateRoomDto) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RoomNotFoundException(String.format(
-                RoomMessages.ROOM_NOT_FOUND.getMessage(), roomId)));
+        try {
+            Room room = roomRepository.findById(roomId)
+                    .orElseThrow(() -> new RoomNotFoundException(String.format(
+                    RoomMessages.ROOM_NOT_FOUND.getMessage(), roomId)));
 
-        room.setBedCapacity(updateRoomDto.getBedCapacity());
-        room.setPricePerNight(updateRoomDto.getPricePerNight());
+            room.setBedCapacity(updateRoomDto.getBedCapacity());
+            room.setPricePerNight(updateRoomDto.getPricePerNight());
 
-        Room updatedRoom = roomRepository.save(room);
-        return roomMapper.toDto(updatedRoom);
+            Room updatedRoom = roomRepository.save(room);
+            return roomMapper.toDto(updatedRoom);
+
+        } catch (RoomNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw e;
+        }
     }
 }
