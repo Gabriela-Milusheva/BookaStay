@@ -12,6 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CreateRoomDto {
+
     private int number;
     private int bedCapacity;
     private double pricePerNight;

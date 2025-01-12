@@ -2,6 +2,7 @@ package com.hotelmanager.services;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -37,30 +38,42 @@ public class HotelService {
     private final RoomMapper roomMapper;
     private final ReviewMapper reviewMapper;
     private final ReviewRepository reviewRepository;
+    private final Logger logger = Logger.getLogger(this.getClass().getName());
 
     public List<HotelDTO> getAllHotels() {
-        return hotelRepository.findAll().stream()
-                .map(hotelMapper::toDto)
-                .collect(Collectors.toList());
+        try {
+            return hotelRepository.findAll().stream()
+                    .map(hotelMapper::toDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new HotelCustomException(HotelMessages.CUSTOM_ERROR.getMessage());
+        }
     }
 
     public HotelDTO getHotelById(UUID hotelId) {
-        Hotel hotel = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new HotelNotFoundException(String.format(
-                HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
-        return hotelMapper.toDto(hotel);
+        try {
+            Hotel hotel = hotelRepository.findById(hotelId)
+                    .orElseThrow(() -> new HotelCustomException.HotelNotFoundException(String.format(
+                    HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
+            return hotelMapper.toDto(hotel);
+        } catch (HotelCustomException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new HotelCustomException(HotelMessages.CUSTOM_ERROR.getMessage());
+        }
     }
 
     @Transactional
     public HotelDTO createHotel(CreateHotelDTO hotelDTO) {
-        if (hotelRepository.existsByName(hotelDTO.getName())) {
-            throw new HotelCustomException.HotelAlreadyExistsException(hotelDTO.getName());
-        }
-
         try {
+            if (hotelRepository.existsByName(hotelDTO.getName())) {
+                throw new HotelCustomException.HotelAlreadyExistsException(hotelDTO.getName());
+            }
             Hotel hotel = hotelMapper.toEntity(hotelDTO);
             Hotel savedHotel = hotelRepository.save(hotel);
             return hotelMapper.toDto(savedHotel);
+        } catch (HotelCustomException e) {
+            throw e;
         } catch (Exception e) {
             throw new HotelCustomException.HotelCreationFailedException();
         }
@@ -74,20 +87,31 @@ public class HotelService {
 
     @Transactional
     public void deleteHotelById(UUID hotelId) {
-        Hotel hotel = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new HotelNotFoundException(String.format(
-                HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
-        hotelRepository.delete(hotel);
+        try {
+            Hotel hotel = hotelRepository.findById(hotelId)
+                    .orElseThrow(() -> new HotelCustomException.HotelNotFoundException(String.format(
+                    HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
+            hotelRepository.delete(hotel);
+        } catch (HotelCustomException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new HotelCustomException.HotelDeletionFailedException();
+        }
     }
 
     public List<RoomDto> getRoomsByHotelId(UUID hotelId) {
-        Hotel hotel = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new HotelNotFoundException(String.format(
-                HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
-
-        return roomRepository.findRoomsByHotelId(hotel.getId()).stream()
-                .map(roomMapper::toDto)
-                .collect(Collectors.toList());
+        try {
+            Hotel hotel = hotelRepository.findById(hotelId)
+                    .orElseThrow(() -> new HotelCustomException.HotelNotFoundException(String.format(
+                    HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
+            return roomRepository.findRoomsByHotelId(hotel.getId()).stream()
+                    .map(roomMapper::toDto)
+                    .collect(Collectors.toList());
+        } catch (HotelCustomException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new HotelCustomException(HotelMessages.ROOMS_FETCH_FAILED.getMessage());
+        }
     }
 
     public List<ReviewDto> getReviewsByHotelId(UUID hotelId) {
@@ -101,46 +125,51 @@ public class HotelService {
 
     @Transactional
     public ReviewDto addReviewToHotel(UUID hotelId, ReviewDto reviewDto) {
-        Hotel hotel = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new HotelNotFoundException(String.format(
-                HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
         try {
+            Hotel hotel = hotelRepository.findById(hotelId)
+                    .orElseThrow(() -> new HotelCustomException.HotelNotFoundException(String.format(
+                    HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
             Review review = reviewMapper.toEntity(reviewDto);
+            review.setHotel(hotel);
             reviewRepository.save(review);
             return reviewMapper.toDto(review);
+        } catch (HotelCustomException e) {
+            throw e;
         } catch (Exception e) {
-            throw new HotelCustomException.HotelCreationFailedException();
+            throw new HotelCustomException(HotelMessages.REVIEW_ADD_FAILED.getMessage());
         }
     }
 
     @Transactional
     public HotelDTO updateHotel(UUID hotelId, UpdateHotelDto updateHotelDto) {
-        Hotel hotel = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new HotelNotFoundException(String.format(
-                HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
-
-        if (updateHotelDto.getName() != null) {
-            hotel.setName(updateHotelDto.getName());
-        }
-        if (updateHotelDto.getAddress() != null) {
-            hotel.setAddress(updateHotelDto.getAddress());
-        }
-        if (updateHotelDto.getPhoneNumber() != null) {
-            hotel.setPhoneNumber(updateHotelDto.getPhoneNumber());
-        }
-        if (updateHotelDto.getEmail() != null) {
-            hotel.setEmail(updateHotelDto.getEmail());
-        }
-        if (updateHotelDto.getWebsite() != null) {
-            hotel.setWebsite(updateHotelDto.getWebsite());
-        }
-        if (updateHotelDto.getDescription() != null) {
-            hotel.setDescription(updateHotelDto.getDescription());
-        }
-
         try {
+            Hotel hotel = hotelRepository.findById(hotelId)
+                    .orElseThrow(() -> new HotelCustomException.HotelNotFoundException(String.format(
+                    HotelMessages.HOTEL_NOT_FOUND.getMessage(), hotelId)));
+
+            if (updateHotelDto.getName() != null) {
+                hotel.setName(updateHotelDto.getName());
+            }
+            if (updateHotelDto.getAddress() != null) {
+                hotel.setAddress(updateHotelDto.getAddress());
+            }
+            if (updateHotelDto.getPhoneNumber() != null) {
+                hotel.setPhoneNumber(updateHotelDto.getPhoneNumber());
+            }
+            if (updateHotelDto.getEmail() != null) {
+                hotel.setEmail(updateHotelDto.getEmail());
+            }
+            if (updateHotelDto.getWebsite() != null) {
+                hotel.setWebsite(updateHotelDto.getWebsite());
+            }
+            if (updateHotelDto.getDescription() != null) {
+                hotel.setDescription(updateHotelDto.getDescription());
+            }
+
             Hotel updatedHotel = hotelRepository.save(hotel);
             return hotelMapper.toDto(updatedHotel);
+        } catch (HotelCustomException e) {
+            throw e;
         } catch (Exception e) {
             throw new HotelCustomException.HotelUpdateFailedException();
         }

@@ -10,6 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateRoomDto {
+
     private int number;
     private int bedCapacity;
     private double pricePerNight;

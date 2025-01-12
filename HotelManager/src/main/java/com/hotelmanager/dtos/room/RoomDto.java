@@ -12,6 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RoomDto {
+
     private UUID id;
     private int number;
     private int bedCapacity;

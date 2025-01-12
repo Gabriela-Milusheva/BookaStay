@@ -38,7 +38,7 @@ public class Review {
     private Hotel hotel;
 
     @ManyToOne
-    @JoinColumn(name = "userId", nullable = false) // Connect review to the user who created it
+    @JoinColumn(name = "userId", nullable = false)
     private User user;
 
     private LocalDateTime createdAt;

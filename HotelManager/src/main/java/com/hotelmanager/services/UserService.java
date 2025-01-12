@@ -132,7 +132,7 @@ public class UserService implements UserDetailsService {
     public UserDto findByEmail(String email) {
         try {
             if (email.isEmpty()) {
-                throw new RuntimeException("Email cannot be empty");
+                throw new UserCustomException.InvalidEmail();
             }
 
             User user = userRepository.findByEmail(email).orElseThrow(() -> new UserCustomException.UserNotFoundException());
@@ -149,7 +149,7 @@ public class UserService implements UserDetailsService {
     public UserDto findByUsername(String username) {
         try {
             if (username.isEmpty()) {
-                throw new RuntimeException("Username cannot be empty");
+                throw new UserCustomException.InvalidUsernameException();
             }
 
             User user = userRepository.findByUsername(username).orElseThrow(() -> new UserCustomException.UserNotFoundException());
@@ -166,7 +166,7 @@ public class UserService implements UserDetailsService {
     public UserDto registerUser(RegisterUserDto userDto) {
         try {
             if (userDto == null) {
-                throw new RuntimeException("UserDto cannot be null");
+                throw new UserCustomException.InvalidUserDto();
             }
 
             if (userRepository.existsByEmail(userDto.getEmail())) {
@@ -198,7 +198,7 @@ public class UserService implements UserDetailsService {
     public LoginResponse loginUser(LoginUserDto loginUserDto) {
         try {
             if (loginUserDto == null) {
-                throw new RuntimeException("LoginUserDto cannot be null");
+                throw new UserCustomException.InvalidLoginUserDto();
             }
 
             User user = this.userRepository.findByEmail(loginUserDto.getEmail()).orElseThrow(() -> new UserCustomException.UserNotFoundException());
@@ -226,7 +226,7 @@ public class UserService implements UserDetailsService {
     public UserDto updateUser(UUID userId, UpdateUserRequest userRequest) {
         try {
             if (userRequest == null) {
-                throw new RuntimeException("UserDto cannot be null");
+                throw new UserCustomException.InvalidUserDto();
             }
 
             User userForUpdate = this.userRepository.findById(userId).orElseThrow(() -> new UserCustomException.UserNotFoundException());
@@ -254,7 +254,7 @@ public class UserService implements UserDetailsService {
     public void updatePassword(ChangeUserPasswordDto userDto) {
         try {
             if (userDto == null) {
-                throw new RuntimeException("UserDto cannot be null");
+                throw new UserCustomException.InvalidUserDto();
             }
 
             User user = this.userRepository.findByEmail(userDto.getEmail()).orElseThrow(() -> new UserCustomException.UserNotFoundException());

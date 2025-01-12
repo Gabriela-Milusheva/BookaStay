@@ -9,7 +9,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,7 +36,8 @@ public class SecurityConfig {
                         "/users/**",
                         "/hotels/**",
                         "/rooms/**",
-                        "/reservations/**").permitAll()
+                        "/reservations/**",
+                        "/oauth2/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 )

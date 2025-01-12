@@ -21,6 +21,9 @@ public enum UserMessages {
     PASSWORD_CHANGED_SUCCESS("Password was changed successfully"),
     USER_UPDATE_SUCCESS("User was updated successfully"),
     INVALID_EMAIL("Invalid email."),
+    INVALID_USERNAME("Invalid username."),
+    INVALID_USER_DTO("Invalid user DTO."),
+    INVALID_LOGIN_USER_DTO("Invalid login user DTO."),
     LOGIN_SUCCESS("User logged in successfully."),
     USERS_FETCH_SUCCESS("Users fetched successfully."),
     USER_FETCH_SUCCESS("User fetched successfully.");

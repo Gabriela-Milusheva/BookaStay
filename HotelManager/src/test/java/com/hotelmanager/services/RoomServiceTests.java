@@ -62,8 +62,8 @@ public class RoomServiceTests {
         Hotel mockHotel = new Hotel();
         mockHotel.setId(hotelId);
         CreateRoomDto createRoomDto = new CreateRoomDto(
-            101, 2, 150.0, RoomTypes.DOUBLE.name(), "Ocean View Room", 3, "Ocean", 25.5, 
-            "Free Wi-Fi, Mini Bar", 4, hotelId
+                101, 2, 150.0, "Double", "Ocean View Room", 3, "Ocean", 25.5,
+                "Free Wi-Fi, Mini Bar", 4, hotelId
         );
 
         when(hotelRepository.findById(hotelId)).thenReturn(Optional.of(mockHotel));
@@ -73,10 +73,10 @@ public class RoomServiceTests {
         when(roomMapper.toEntity(createRoomDto)).thenReturn(mockRoom);
         when(roomRepository.save(mockRoom)).thenReturn(mockRoom);
         when(roomMapper.toDto(mockRoom)).thenReturn(new RoomDto(
-            mockRoom.getId(), createRoomDto.getNumber(), createRoomDto.getBedCapacity(), 
-            createRoomDto.getPricePerNight(), RoomTypes.DOUBLE.toString(), createRoomDto.getDescription(), 
-            createRoomDto.getFloor(), createRoomDto.getView(), createRoomDto.getSize(), 
-            createRoomDto.getAmenities(), createRoomDto.getMaxOccupants(), createRoomDto.getHotelId()
+                mockRoom.getId(), createRoomDto.getNumber(), createRoomDto.getBedCapacity(),
+                createRoomDto.getPricePerNight(), "Double", createRoomDto.getDescription(),
+                createRoomDto.getFloor(), createRoomDto.getView(), createRoomDto.getSize(),
+                createRoomDto.getAmenities(), createRoomDto.getMaxOccupants(), createRoomDto.getHotelId()
         ));
 
         // Act
@@ -87,7 +87,7 @@ public class RoomServiceTests {
         assertEquals(101, result.getNumber());
         assertEquals(2, result.getBedCapacity());
         assertEquals(150.0, result.getPricePerNight());
-        assertEquals(RoomTypes.DOUBLE.toString(), result.getRoomType());
+        assertEquals("Double", result.getRoomType());
         assertEquals("Ocean View Room", result.getDescription());
 
         verify(hotelRepository).findById(hotelId);
@@ -114,23 +114,23 @@ public class RoomServiceTests {
         verify(roomRepository).delete(mockRoom);
     }
 
-@Test
-void deleteRoomByRoomId_ShouldThrowException_WhenRoomDoesNotExist() {
-    // Arrange
-    UUID roomId = UUID.randomUUID();
-    
-    when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
-    
-    // Act & Assert
-    RoomNotFoundException exception = assertThrows(RoomNotFoundException.class, () -> {
-        roomService.deleteRoomByRoomId(roomId);
-    });
-    
-    assertEquals(String.format("Room with ID %s not found.", roomId), exception.getMessage());
+    @Test
+    void deleteRoomByRoomId_ShouldThrowException_WhenRoomDoesNotExist() {
+        // Arrange
+        UUID roomId = UUID.randomUUID();
 
-    verify(roomRepository).findById(roomId);
-    verifyNoMoreInteractions(roomRepository);
-}
+        when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        RoomNotFoundException exception = assertThrows(RoomNotFoundException.class, () -> {
+            roomService.deleteRoomByRoomId(roomId);
+        });
+
+        assertEquals(String.format("Room with ID %s not found.", roomId), exception.getMessage());
+
+        verify(roomRepository).findById(roomId);
+        verifyNoMoreInteractions(roomRepository);
+    }
 
     @Test
     void getRoomByRoomId_ShouldReturnRoomDTO_WhenRoomExists() {
@@ -141,12 +141,13 @@ void deleteRoomByRoomId_ShouldThrowException_WhenRoomDoesNotExist() {
         mockRoom.setNumber(101);
         mockRoom.setBedCapacity(2);
         mockRoom.setPricePerNight(150.0);
-        mockRoom.setRoomType(RoomTypes.DOUBLE);
+        mockRoom.setRoomType("Double");
         mockRoom.setDescription("Ocean View Room");
+        UUID hotelId = UUID.randomUUID();
 
         RoomDto expectedDto = new RoomDto(
-            roomId, 101, 2, 150.0, RoomTypes.DOUBLE.name(), "Ocean View Room", 3, "Ocean", 
-            25.5, "Free Wi-Fi, Mini Bar", 4, roomId
+                roomId, 101, 2, 150.0, "Double", "Ocean View Room", 3, "Ocean",
+                25.5, "Free Wi-Fi, Mini Bar", 4, hotelId
         );
 
         when(roomRepository.findById(roomId)).thenReturn(Optional.of(mockRoom));
@@ -190,12 +191,12 @@ void deleteRoomByRoomId_ShouldThrowException_WhenRoomDoesNotExist() {
         mockRoom.setNumber(101);
         mockRoom.setBedCapacity(2);
         mockRoom.setPricePerNight(150.0);
-        mockRoom.setRoomType(RoomTypes.DOUBLE);
+        mockRoom.setRoomType("Double");
         mockRoom.setDescription("Ocean View Room");
 
         UpdateRoomDto updateRoomDto = new UpdateRoomDto(
-            101, 3, 200.0, RoomTypes.SINGLE.toString(), "Mountain View Room", 5, "Mountain", 30.0, 
-            "Free Wi-Fi, Coffee Machine", 5
+                101, 3, 200.0, "Single", "Mountain View Room", 5, "Mountain", 30.0,
+                "Free Wi-Fi, Coffee Machine", 5
         );
 
         when(roomRepository.findById(roomId)).thenReturn(Optional.of(mockRoom));
@@ -206,7 +207,7 @@ void deleteRoomByRoomId_ShouldThrowException_WhenRoomDoesNotExist() {
         // Assert
         assertEquals(3, mockRoom.getBedCapacity());
         assertEquals(200.0, mockRoom.getPricePerNight());
-        assertEquals(RoomTypes.DOUBLE, mockRoom.getRoomType());
+        assertEquals("Double", mockRoom.getRoomType());
         assertEquals("Ocean View Room", mockRoom.getDescription());
 
         verify(roomRepository).findById(roomId);
@@ -218,20 +219,20 @@ void deleteRoomByRoomId_ShouldThrowException_WhenRoomDoesNotExist() {
         // Arrange
         UUID roomId = UUID.randomUUID();
         UpdateRoomDto updateRoomDto = new UpdateRoomDto(
-            101, 3, 200.0, RoomTypes.SINGLE.toString(), "Mountain View Room", 5, "Mountain", 30.0, 
-            "Free Wi-Fi, Coffee Machine", 5
+                101, 3, 200.0, "Single", "Mountain View Room", 5, "Mountain", 30.0,
+                "Free Wi-Fi, Coffee Machine", 5
         );
-    
+
         when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
-    
+
         // Act & Assert
         RoomNotFoundException exception = assertThrows(RoomNotFoundException.class, () -> {
             roomService.updateRoomByRoomId(roomId, updateRoomDto);
         });
-    
+
         assertEquals(String.format("Room with ID %s not found.", roomId), exception.getMessage());
-    
+
         verify(roomRepository).findById(roomId);
-        verifyNoMoreInteractions(roomRepository);  
+        verifyNoMoreInteractions(roomRepository);
     }
 }
